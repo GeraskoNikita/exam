@@ -24,7 +24,7 @@ public class Gambler extends Hero {
 
         } else {
             int counter = 0;
-            while (counter < heroes.length) {
+            while (counter <= heroes.length) {
                 counter++;
                 Hero hero = heroes[RPG_Game.random.nextInt(heroes.length)];
                 if (hero.getHealth() > 0 && hero != this) {
@@ -56,5 +56,6 @@ class Dice {
         return RPG_Game.random.nextInt(this.sides) + 1;
     }
 }
+
 
 
