@@ -1,56 +1,74 @@
-package kg.geeks.game.players;
+package kg.geeks.game.logic;
 
-import kg.geeks.game.logic.RPG_Game;
+import kg.geeks.game.players.*;
 
-public class Gambler extends Hero {
-    private Dice diceOne = new Dice(6);
-    private Dice diceTwo = new Dice(6);
+import java.util.Random;
 
-    public Gambler(String name, int health) {
-        super(name, health, 0, SuperAbility.Luck);
+public class RPG_Game {
+
+    public static Random random = new Random();
+    private static int roundNumber;
+
+    public static void startGame() {
+        Boss boss = new Boss("Goblin", 1000, 50);
+        Gambler gambler = new Gambler("Loki", 300);
+        Warrior warrior1 = new Warrior(
+                "Heracles", 280, 15);
+        Warrior warrior2 = new Warrior(
+                "Achilles", 270, 20);
+        Magic magic = new Magic("Vedmak", 290, 10);
+        Berserk berserk = new Berserk("Guts", 260, 10);
+        Medic doc = new Medic("Lekar", 250, 5, 15);
+        Medic assistant = new Medic("Chilchak", 300, 5, 5);
+
+        Hero[] heroes = {gambler,warrior1, doc, magic, warrior2, berserk, assistant};
+
+        printStatistics(boss, heroes);
+        while (!isGameOver(boss, heroes)) {
+            playRound(boss, heroes);
+        }
     }
 
-    @Override
-    public void applySuperPower(Boss boss, Hero[] heroes) {
-        int resultFirstDice = diceOne.rotate();
-        int resultSecondDice = diceTwo.rotate();
-        int result = resultFirstDice + resultSecondDice;
-        System.out.println("Лудоман бросает кости... 🎲🎲 "
-                + resultFirstDice + " и " + resultSecondDice + " Итого: " + result);
-        if (resultFirstDice == resultSecondDice) {
-            boss.setHealth(boss.getHealth() - result);
-            System.out.println("Лудоман  нанес " + result + ".единиц  урона Боссу " + boss.getName() + " !");
-
-        }
-        if (resultFirstDice != resultSecondDice) {
-            while (true) {
-                Hero hero = heroes[RPG_Game.random.nextInt(heroes.length)];
-                if (hero.getHealth() > 0) {
-                    hero.setHealth(hero.getHealth() - result);
-                    System.out.println("Лудоман  нанес " + result + ".единиц урона герою " + hero.getName() + "!");
-
-                    break;
-                }
+    private static void playRound(Boss boss, Hero[] heroes) {
+        roundNumber++;
+        boss.chooseDefence();
+        boss.attack(heroes);
+        for (Hero hero : heroes) {
+            if (hero.getHealth() > 0 && boss.getHealth() > 0
+                    && hero.getAbility() != boss.getDefence()) {
+                hero.attack(boss);
+                hero.applySuperPower(boss, heroes);
             }
+        }
+        printStatistics(boss, heroes);
+    }
 
+    private static void printStatistics(Boss boss, Hero[] heroes) {
+        System.out.println("ROUND " + roundNumber + " ------------------");
+        System.out.println(boss);
+        for (Hero hero : heroes) {
+            System.out.println(hero);
         }
     }
-    @Override
-    public String toString() {
-        return "🎲 " +this.getName() + " health: " + this.getHealth() + " damage: " + this.getDamage();
+
+    private static boolean isGameOver(Boss boss, Hero[] heroes) {
+        if (boss.getHealth() <= 0) {
+            System.out.println("Heroes won!!!");
+            return true;
+        }
+        boolean allHeroesDead = true;
+        for (Hero hero : heroes) {
+            if (hero.getHealth() > 0) {
+                allHeroesDead = false;
+                break;
+            }
+        }
+        if (allHeroesDead) {
+            System.out.println("Boss won!!!");
+            return true;
+        }
+        return false;
     }
+
+
 }
-
-class Dice {
-    private int sides;
-
-    public Dice(int sides) {
-        this.sides = sides;
-    }
-
-    public int rotate() {
-        return RPG_Game.random.nextInt(this.sides) + 1;
-    }
-}
-
-
